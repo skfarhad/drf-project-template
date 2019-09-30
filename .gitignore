@@ -7,11 +7,6 @@ __pycache__/
 
 
 apps/user/__pycache__/
-apps/notification/__pycache__/
-apps/key/__pycache__/
-apps/assignee/__pycache__/
-apps/site_info/__pycache__/
-apps/report/__pycache__/
 
 apps/__pycache__/
 conf/__pycache__/

@@ -6,7 +6,7 @@ import os
 import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SECRET_KEY = 't%w^x7-+vtgiw1^6w6gl9g6q7m$9gdhh8#t5s_mp!!y+x#4v@b'
+SECRET_KEY = None
 
 DEBUG = True
 
@@ -71,7 +71,7 @@ WSGI_APPLICATION = 'conf.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'robi_key_finder_backend',
+        'NAME': os.environ['DB_NAME'],
         'USER': 'postgres',
         'HOST': 'localhost',
         'PASSWORD': os.environ['DB_PASSWORD'],
@@ -144,4 +144,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(STATIC_ROOT, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

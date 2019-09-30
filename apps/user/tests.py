@@ -168,7 +168,7 @@ class UserTestCase(TestCase):
         # print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_profile_fail(self):
+    def test_create_profile_fail_duplicate_username(self):
         user1 = create_user(self.username1)
 
         client.force_authenticate(user1)
@@ -230,7 +230,7 @@ class UserTestCase(TestCase):
         # print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_edit_profile_fail(self):
+    def test_edit_profile_fail_username_length(self):
         user1 = create_user(self.username1)
 
         client.force_authenticate(user1)
@@ -247,6 +247,11 @@ class UserTestCase(TestCase):
         )
         # print(response.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_edit_profile_fail_invalid_character(self):
+        user1 = create_user(self.username1)
+
+        client.force_authenticate(user1)
 
         response = client.patch(
             user_prefix + USER_ULRS['profile_id'].replace('<int:pk>', str(user1.id)),

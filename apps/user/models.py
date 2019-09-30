@@ -1,18 +1,11 @@
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import UserManager, Permission, PermissionsMixin
+from django.contrib.auth.models import UserManager, PermissionsMixin
 from django.db import models
-from django.utils import timezone
+
+from apps.common.models import TimeFieldsIndexed
 
 
 class SimpleUserManager(UserManager):
-    def create_user(self, username, **extra_fields):
-        # email = self.normalize_email(email)
-        user = self.model(username=username, **extra_fields)
-        user.set_password(make_password(password=None))
-        user.save(using=self._db)
-        print("CREATE USER", extra_fields)
-        return user
 
     def create_superuser(self, username, password, **extra_fields):
         # email = self.normalize_email(email)
@@ -21,11 +14,11 @@ class SimpleUserManager(UserManager):
         user.is_superuser = True
         user.set_password(password)
         user.save(using=self._db)
-        print("CREATE SUPERUSER", extra_fields)
+        print("CREATED SUPERUSER!", extra_fields)
         return user
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin, TimeFieldsIndexed):
     username = models.CharField(max_length=64, unique=True, null=True, blank=True)
     full_name = models.CharField(max_length=128, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
@@ -34,9 +27,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
-    ts_created = models.DateTimeField(default=timezone.now)
-    ts_update = models.DateTimeField(auto_now=True)
 
     image = models.URLField(null=True, blank=True)
     fb_token = models.TextField(null=True, blank=True)
@@ -50,7 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.full_name
 
     def get_short_name(self):
-        return self.full_name
+        return self.full_name.split(' ')[0]
 
     def __str__(self):
         return self.username

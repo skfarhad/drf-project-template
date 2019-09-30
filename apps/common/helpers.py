@@ -33,11 +33,3 @@ def get_paginated(queryset, request, to_dict, limit=10):
     # print(json.dumps(data))
 
     return data
-
-
-def get_dict_list(obj_qs, to_dict):
-    obj_dict_list = []
-    for obj in obj_qs:
-        obj_details = to_dict(obj)
-        obj_dict_list.append(obj_details)
-    return obj_dict_list

@@ -12,7 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('apidoc/', get_swagger_view(title=PROJECT_NAME + ' API Documentation')),
     path('v0/user/', include('apps.user.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 admin.site.site_header = PROJECT_NAME + " Admin"
 admin.site.site_title = PROJECT_NAME + " Admin Portal"
