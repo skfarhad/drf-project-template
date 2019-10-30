@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import NotAcceptable, PermissionDenied, \
     AuthenticationFailed, ValidationError
 
-from apps.user.helpers_auth import get_validated_phone
+from apps.user.fb_auth import get_validated_phone
 from apps.user.models import User
 # from django.core.validators import RegexValidator
 # alphanumeric = RegexValidator(r'^[0-9a-zA-Z]*$', 'Only alphanumeric characters are allowed.')

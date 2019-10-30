@@ -6,6 +6,7 @@ import os
 import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# TODO: Use /prod/secret_key_gen.py to generate new key
 SECRET_KEY = None
 
 DEBUG = True
@@ -71,7 +72,7 @@ WSGI_APPLICATION = 'conf.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.environ['DB_NAME'],
+        'NAME': 'app_backend',
         'USER': 'postgres',
         'HOST': 'localhost',
         'PASSWORD': os.environ['DB_PASSWORD'],
@@ -112,6 +113,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
 
     ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 20,
@@ -145,3 +147,14 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+CORS_ORIGIN_ALLOW_ALL = False
+# set origins
+CORS_ORIGIN_WHITELIST = (
+    'localhost:3000',
+)
+
+CORS_ORIGIN_REGEX_WHITELIST = (
+    'localhost:3000',
+)
