@@ -1,5 +1,5 @@
 Django==2.2.5
-djangorestframework==3.10.2
+djangorestframework==3.11.2
 django-jinja==2.4.1
 django-cors-headers==2.4.0
 djangorestframework-jwt==1.11.0
