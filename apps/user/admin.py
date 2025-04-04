@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
@@ -13,11 +14,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = (
-            'email',
-            'full_name',
-            'phone',
-        )
+        fields = ('email', 'full_name', 'phone', 'username')
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -35,16 +32,12 @@ class UserCreationForm(forms.ModelForm):
 
 
 class UserChangeForm(forms.ModelForm):
-    password = ReadOnlyPasswordHashField()
+    password = ReadOnlyPasswordHashField(label=_("Password"),
+        help_text=_('To change password use this link- <a href="../password/">this form</a>.'))
 
     class Meta:
         model = User
-        fields = (
-            'email',
-            'full_name',
-            'phone',
-            'is_active', 'is_staff',
-        )
+        fields = ('email', 'full_name', 'phone', 'username', 'is_active', 'is_staff', 'is_superuser')
 
     def clean_password(self):
         return self.initial["password"]
@@ -53,39 +46,26 @@ class UserChangeForm(forms.ModelForm):
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
-    # inlines = (UserStateInline,)
 
-    list_display = (
-        'username',
-        'phone',
-        'email',
-        'full_name',
-        'is_active', 'is_staff',
-    )
-
+    list_display = ('username', 'phone', 'email', 'full_name', 'is_active', 'is_staff')
     list_filter = ('is_staff', 'is_active',)
+
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': (
-            'username',
-            'full_name',
-            'phone',
-        )}),
-        ('Permissions', {
-            'fields': (
-                'is_staff', 'is_active', 'groups', 'user_permissions'
-            )
-        }),
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('full_name', 'phone', 'email',)}),
+        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
     )
 
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2')}
-        ),
+            'fields': ('username', 'email', 'full_name', 'phone', 'password1', 'password2'),
+        }),
     )
+
+    search_fields = ('username', 'email', 'phone')
     ordering = ('username',)
-    filter_horizontal = ()
+    filter_horizontal = ('groups', 'user_permissions')
 
 
 admin.site.register(User, UserAdmin)

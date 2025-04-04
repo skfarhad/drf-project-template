@@ -1,5 +1,4 @@
 from rest_framework.serializers import ModelSerializer
-from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 from rest_framework import serializers
 from rest_framework.exceptions import NotAcceptable, PermissionDenied, \
     AuthenticationFailed, ValidationError
@@ -9,6 +8,19 @@ from apps.user.models import User
 # from django.core.validators import RegexValidator
 # alphanumeric = RegexValidator(r'^[0-9a-zA-Z]*$', 'Only alphanumeric characters are allowed.')
 
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+def get_tokens_for_user(user):
+    """
+    Given a user, return a dict with refresh and access tokens.
+    """
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
 
 def validate_username(username):
     if len(username) < 5 or not username.isalnum():
@@ -53,7 +65,7 @@ class SignupSerializer(serializers.Serializer):
         )
         user.set_password(password)
         user.save()
-        jwt_token = jwt_encode_handler(jwt_payload_handler(user))
+        jwt_token = get_tokens_for_user(user)
         return user, jwt_token
 
 
@@ -74,7 +86,7 @@ class PasswordLoginSerializer(serializers.Serializer):
         if not user.check_password(password):
             raise AuthenticationFailed(detail='Invalid credentials!')
 
-        jwt_token = jwt_encode_handler(jwt_payload_handler(user))
+        jwt_token = get_tokens_for_user(user)
         return user, jwt_token
 
 

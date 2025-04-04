@@ -1,4 +1,4 @@
-from rest_framework_jwt import views as jwt
+from rest_framework_simplejwt import views as jwt
 from rest_framework import routers
 from django.urls import path
 
@@ -22,13 +22,13 @@ USER_ULRS = {
 }
 
 router = routers.DefaultRouter()
-router.register('profile', ProfileViewSet, base_name='profile')
+router.register('profile', ProfileViewSet, basename='profile')
 
 
 urlpatterns = [
-    path('token/refresh/', jwt.refresh_jwt_token),
-    path('token/verify/', jwt.verify_jwt_token),
-    path('token/get/', jwt.obtain_jwt_token),
+    path('token/refresh/', jwt.TokenRefreshView.as_view()),
+    path('token/verify/', jwt.TokenVerifyView.as_view()),
+    path('token/get/', jwt.TokenObtainPairView.as_view()),
 
     path(USER_ULRS['login_password'], PasswordLogin.as_view()),
     path(USER_ULRS['change_password_otp'], PasswordChangeOtp.as_view()),

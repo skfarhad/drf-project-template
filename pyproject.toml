@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "drf-project-template"
+version = "0.1.0"
+description = "Just a template project to get started with Django Rest API projects quickly"
+authors = ["Sk Farhad <sk.farhad.eee@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+django = "4.2.11"
+djangorestframework = "3.14.0"
+djangorestframework-simplejwt = "^5.3.0"
+django-cors-headers = "4.3.1"
+django-filter = "23.5"
+firebase-admin = "^6.7.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "7.4.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
