@@ -1,11 +1,18 @@
+from drf_spectacular.types import OpenApiTypes
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-
-from apps.user.serializers import PasswordLoginSerializer, SignupSerializer, \
-    PasswordChangeOTPSerializer
+from drf_spectacular.utils import extend_schema
+from apps.user.serializers import (
+    PasswordLoginSerializer,
+    SignupSerializer,
+    PasswordChangeOTPSerializer,
+    SignupResponseSerializer,
+    CommonResponseSerializer,
+    PasswordSetSerializer,
+    ErrorResponseSerializer
+)
 from apps.user.serializers import ProfileSerializer
-
 
 def get_profile_details(user):
     return ProfileSerializer(user).data
@@ -14,26 +21,15 @@ def get_profile_details(user):
 class Signup(APIView):
     permission_classes = (AllowAny,)
 
+    @extend_schema(
+        summary="User Signup",
+        request=SignupSerializer,
+        responses={
+            200: SignupResponseSerializer,
+            400: ErrorResponseSerializer
+        }
+    )
     def post(self, request, format=None):
-        """
-        Sample Submit:
-        ---
-            {
-                'username': 'username',
-                'access_token': 'asdfasdfasdf2',
-                'full_name': 'Full Name',
-                'email': 'test@mail.com',
-                'password': 'pass123'
-            }
-
-        Sample Response:
-        ---
-            {
-                'user_details': { profile fields },
-                'jwt_token': jwt_token,
-            }
-
-        """
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
             user, jwt_token = serializer.signup_user(serializer.validated_data)
@@ -48,23 +44,16 @@ class Signup(APIView):
 class PasswordLogin(APIView):
     permission_classes = (AllowAny,)
 
+    @extend_schema(
+        summary="User Login",
+        request=PasswordLoginSerializer,
+        responses={
+            200: SignupResponseSerializer,
+            400: ErrorResponseSerializer
+        }
+    )
+
     def post(self, request, format=None):
-        """
-        Sample Submit:
-        ---
-            {
-                'username': 'username',
-                'password': 'asdfasdfasdf2',
-            }
-
-        Sample Response:
-        ---
-            {
-                'user_details': { profile fields },
-                'jwt_token': jwt_token,
-            }
-
-        """
         serializer = PasswordLoginSerializer(data=request.data)
         if serializer.is_valid():
             user, jwt_token = serializer.authenticate(serializer.validated_data)
@@ -80,14 +69,6 @@ class PasswordChange(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, format=None):
-        """
-        Sample Submit:
-        ---
-            {
-                'old_password': 'asdfasdfasdf1',
-                'new_password': 'asdfasdfasdf2',
-            }
-        """
         # print("Request", serializer.data)
         old_password = request.data.get('old_password', False)
         new_password = request.data.get('new_password', False)
@@ -109,21 +90,22 @@ class PasswordChange(APIView):
 class PasswordChangeOtp(APIView):
     permission_classes = (AllowAny,)
 
+
+    @extend_schema(
+        summary="Password Change",
+        request=PasswordChangeOTPSerializer,
+        responses={
+            200: CommonResponseSerializer,
+            400: ErrorResponseSerializer
+        }
+    )
+
     def post(self, request, format=None):
-        """
-        Sample Submit:
-        ---
-            {
-                'username': 'username',
-                'access_token': 'sfasdfasdfX',
-                'new_password': 'asdfasdfasdf2',
-            }
-        """
         serializer = PasswordChangeOTPSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.authenticate(serializer.validated_data)
             data = {
-                'msg': 'OK',
+                'message': 'OK',
             }
             return Response(data, status=200)
         return Response({'detail': str(serializer.errors)}, status=400)
@@ -132,21 +114,23 @@ class PasswordChangeOtp(APIView):
 class PasswordSet(APIView):
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(
+        summary="Password Set",
+        request=PasswordSetSerializer,
+        responses={
+            200: CommonResponseSerializer,
+            400: ErrorResponseSerializer
+        }
+    )
+
     def post(self, request, format=None):
-        """
-        Sample Submit:
-        ---
-            {
-                'password': 'asdfasdfasdf1',
-            }
-        """
         user = request.user
         if user.has_usable_password():
-            return Response({'msg': 'Use OTP method!'}, status=406)
+            return Response({'message': 'Use OTP method!'}, status=406)
         password = request.data.get('password', False)
         if not password or len(password) < 8:
-            return Response({'msg': 'Provide a valid password!'}, status=400)
+            return Response({'message': 'Provide a valid password!'}, status=400)
 
         user.set_password(password)
         user.save()
-        return Response({'msg': 'OK'}, status=200)
+        return Response({'message': 'OK'}, status=200)

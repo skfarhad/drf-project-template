@@ -34,6 +34,18 @@ def validate_password(password):
         raise ValidationError(detail=msg)
 
 
+class CommonResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+
+
+class ErrorResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+
+
+class PasswordSetSerializer(serializers.Serializer):
+    password = serializers.CharField()
+
+
 class SignupSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=32, required=True)
     access_token = serializers.CharField(max_length=255, required=True)
@@ -160,3 +172,9 @@ class ProfileSerializer(ModelSerializer):
             print(str(e))
             raise NotAcceptable(detail='Something went wrong!')
         return user
+
+
+class SignupResponseSerializer(serializers.Serializer):
+    user_details = ProfileSerializer()
+    jwt_token = serializers.CharField()
+

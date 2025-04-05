@@ -1,6 +1,9 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
+from drf_spectacular.utils import OpenApiResponse, inline_serializer
+from rest_framework import serializers
 
 from .helpers import get_paginated
 
@@ -9,72 +12,24 @@ Generic ViewSet Template
 """
 
 
+def PaginatedResponse(serializer_class):
+    return OpenApiResponse(
+        description=f'Paginated {serializer_class.__name__} list',
+        response=inline_serializer(
+            name=f'Paginated{serializer_class.__name__}',
+            fields={
+                'limit': serializers.IntegerField(),
+                'offset': serializers.IntegerField(),
+                'count': serializers.IntegerField(),
+                'next': serializers.URLField(allow_null=True, required=False),
+                'previous': serializers.URLField(allow_null=True, required=False),
+                'results': serializer_class(many=True),
+            }
+        )
+    )
+
+
 class CustomViewSet(viewsets.ViewSet):
-    """
-    retrieve:
-        Return single object
-
-        Sample Response:
-        ---
-            {
-            }
-
-    list:
-        Return object list
-
-        Query parameters:
-        ---
-            token:
-                type: str
-                required: No
-
-        Sample Response:
-        ---
-            [
-                {
-                },.....
-            ]
-
-    create:
-        Create object
-
-        Sample Submit:
-        ---
-            {
-            }
-
-    partial_update:
-        Update single object
-
-        Sample Submit:
-        ---
-            {
-            }
-
-
-    paginated:
-        Return paginated object list
-
-        Query parameters:
-        ---
-            //same as list
-        Sample Response:
-        ---
-
-            {
-                'limit': 10,
-                'offset': 20,
-                'count': 101,
-                'next': 'limit=5&offset=30',
-                'prev': 'limit=5&offset=10',
-                'results': [
-                    {
-                        //object details fields
-                    },...
-                ]
-            }
-
-    """
     ObjModel = None
     ObjSerializer = None
 
@@ -124,7 +79,7 @@ class CustomViewSet(viewsets.ViewSet):
             obj_instance = serializer.create_obj(serializer.validated_data)
             data = self.get_obj_details(obj_instance)
             return Response(data, status=201)
-        return Response(serializer.errors, status=400)
+        return Response({'detail': str(serializer.errors)}, status=400)
 
     def partial_update(self, request, pk, format=None):
         obj_qs = self.ObjModel.objects.filter(id=pk)
@@ -141,8 +96,8 @@ class CustomViewSet(viewsets.ViewSet):
                 )
                 data = self.get_obj_details(obj_instance)
                 return Response(data, status=200)
-            return Response(serializer.errors, status=400)
-        return Response({'details': 'Object not found!'}, status=400)
+            return Response({'detail': str(serializer.errors)}, status=400)
+        return Response({'detail': 'Object not found!'}, status=400)
 
     def destroy(self, request, pk, format=None):
         obj_qs = self.ObjModel.objects.filter(id=pk)
@@ -153,8 +108,8 @@ class CustomViewSet(viewsets.ViewSet):
                 obj_instance.delete()
                 return Response({'msg': 'OK'}, status=200)
             except Exception as e:
-                return Response({'details': str(e)}, status=400)
-        return Response({'details': 'Object not found!'}, status=400)
+                return Response({'detail': str(e)}, status=400)
+        return Response({'detail': 'Object not found!'}, status=400)
 
     @action(methods=['get'], detail=False)
     def paginated(self, request):
@@ -165,3 +120,4 @@ class CustomViewSet(viewsets.ViewSet):
             self.get_dict_list
         )
         return Response(obj_list, status=200)
+

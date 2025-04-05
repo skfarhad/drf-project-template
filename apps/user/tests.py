@@ -5,7 +5,7 @@ from rest_framework import status
 from apps.user.models import User
 from apps.user.urls import USER_ULRS
 
-client = APIClient()
+# client = APIClient()
 
 user_prefix = '/v0/user/'
 
@@ -14,16 +14,20 @@ FB_TOKEN_INVALID = ''
 
 
 def create_user(username):
-    user = User.objects.create(
-        username=username, is_active=True,
+    user = User.objects.create_user(
+        username=username,
+        password='dummy_password',
         full_name='User1',
     )
+    user.is_active = True
+    user.save()
     return user
 
 
 class UserTestCase(TestCase):
 
     def setUp(self):
+        self.client = APIClient()
         self.valid_access_token1 = ''
         self.username1 = 'username1'
         self.username2 = 'username2'
@@ -52,7 +56,7 @@ class UserTestCase(TestCase):
 
     def test_signup_fail_invalid_username(self):
 
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['signup_api'],
             {
                 'username': 'new user',
@@ -66,7 +70,7 @@ class UserTestCase(TestCase):
 
     def test_signup_fail_invalid_password(self):
 
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['signup_api'],
             {
                 'username': 'new user',
@@ -80,7 +84,7 @@ class UserTestCase(TestCase):
 
     def test_signup_fail_invalid_token(self):
         # TODO: Add token generator class for authkit
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['signup_api'],
             {
                 'username': 'new user',
@@ -97,7 +101,7 @@ class UserTestCase(TestCase):
         manager1.set_password(password)
         manager1.save()
 
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['login_password'],
             {
                 'username': self.username1,
@@ -115,7 +119,7 @@ class UserTestCase(TestCase):
         manager1.set_password(password)
         manager1.save()
 
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['login_password'],
             {
                 'username': self.username2,
@@ -126,7 +130,7 @@ class UserTestCase(TestCase):
         # print(response.data)
         self.assertEqual(response.status_code, 401)
 
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['login_password'],
             {
                 'username': self.username1,
@@ -140,9 +144,9 @@ class UserTestCase(TestCase):
     def test_create_profile_success(self):
         user1 = create_user(self.username1)
 
-        client.force_authenticate(user1)
+        self.client.force_authenticate(user1)
 
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['profile'],
             {
                 'username': self.username2,
@@ -152,10 +156,10 @@ class UserTestCase(TestCase):
             },
             format='json',
         )
-        # print(response.data)
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['profile'],
             {
                 'username': self.username4,
@@ -171,9 +175,9 @@ class UserTestCase(TestCase):
     def test_create_profile_fail_duplicate_username(self):
         user1 = create_user(self.username1)
 
-        client.force_authenticate(user1)
+        self.client.force_authenticate(user1)
 
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['profile'],
             {
                 'username': self.username1,
@@ -186,7 +190,7 @@ class UserTestCase(TestCase):
         # print(response.data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-        response = client.post(
+        response = self.client.post(
             user_prefix + USER_ULRS['profile'],
             {
                 'username': 'new user',
@@ -202,9 +206,9 @@ class UserTestCase(TestCase):
     def test_edit_profile_success(self):
         user1 = create_user(self.username1)
 
-        client.force_authenticate(user1)
+        self.client.force_authenticate(user1)
 
-        response = client.patch(
+        response = self.client.patch(
             user_prefix + USER_ULRS['profile_id'].replace('<int:pk>', str(user1.id)),
             {
                 'username': self.username1,
@@ -217,7 +221,7 @@ class UserTestCase(TestCase):
         # print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response = client.patch(
+        response = self.client.patch(
             user_prefix + USER_ULRS['profile_id'].replace('<int:pk>', str(user1.id)),
             {
                 'username': self.username4,
@@ -233,9 +237,9 @@ class UserTestCase(TestCase):
     def test_edit_profile_fail_username_length(self):
         user1 = create_user(self.username1)
 
-        client.force_authenticate(user1)
+        self.client.force_authenticate(user1)
 
-        response = client.patch(
+        response = self.client.patch(
             user_prefix + USER_ULRS['profile_id'].replace('<int:pk>', str(user1.id)),
             {
                 'username': 'user',
@@ -251,9 +255,9 @@ class UserTestCase(TestCase):
     def test_edit_profile_fail_invalid_character(self):
         user1 = create_user(self.username1)
 
-        client.force_authenticate(user1)
+        self.client.force_authenticate(user1)
 
-        response = client.patch(
+        response = self.client.patch(
             user_prefix + USER_ULRS['profile_id'].replace('<int:pk>', str(user1.id)),
             {
                 'username': 'user_5',
@@ -275,9 +279,9 @@ class UserTestCase(TestCase):
         user112 = create_user(self.username5)
         user22 = create_user(self.username6)
 
-        client.force_authenticate(user1)
+        self.client.force_authenticate(user1)
 
-        response = client.get(
+        response = self.client.get(
             user_prefix + USER_ULRS['profile'],
             {
 
